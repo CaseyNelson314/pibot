@@ -10,19 +10,28 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 sudo apt update
 sudo apt install -y git build-essential cmake
 
-# --- lgpio (GPIO制御ライブラリ) ---
+# --- pigpio (GPIO制御ライブラリ) ---
 # Debian 13 (trixie) では apt に無いためソースからビルドする。
 # 既にインストール済みならスキップ (べき等性のため)。
-if [ -f /usr/local/lib/liblgpio.so ]; then
-    echo "lgpio はインストール済みのためスキップします。"
+if [ -f /usr/local/lib/libpigpio.so ] || [ -f /usr/lib/libpigpio.so ]; then
+    echo "pigpio はインストール済みのためスキップします。"
 else
-    echo "lgpio をソースからビルドします。"
-    LG_DIR="$(mktemp -d)"
-    git clone --depth 1 https://github.com/joan2937/lg.git "${LG_DIR}/lg"
-    make -C "${LG_DIR}/lg"
-    sudo make -C "${LG_DIR}/lg" install
+    echo "pigpio をソースからビルドします。"
+    PIGPIO_DIR="$(mktemp -d)"
+    git clone --depth 1 https://github.com/joan2937/pigpio.git "${PIGPIO_DIR}/pigpio"
+    make -C "${PIGPIO_DIR}/pigpio"
+    # make install は pigpiod (デーモン) の systemd 登録で警告を出すことがあるが、
+    # 本プロジェクトは libpigpio を直接リンクして使うためデーモンは不要。
+    # ライブラリとヘッダさえ入ればよいので、登録失敗は無視する。
+    sudo make -C "${PIGPIO_DIR}/pigpio" install || true
     sudo ldconfig
-    rm -rf "${LG_DIR}"
+    rm -rf "${PIGPIO_DIR}"
+
+    # ライブラリが実際に入ったか確認
+    if [ ! -f /usr/local/lib/libpigpio.so ] && [ ! -f /usr/lib/libpigpio.so ]; then
+        echo "pigpio のインストールに失敗しました。"
+        exit 1
+    fi
 fi
 
 # --- actuator サーバーのビルド ---
