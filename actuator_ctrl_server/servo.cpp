@@ -22,9 +22,6 @@ void servo::move(float angle_rad)
     if (pulse_us == last_pulse_us)   // 変化なし → 何もしない(保持)
         return;
     last_pulse_us = pulse_us;
-
-    if (std::abs(pulse_us - last_pulse_us) < 3)  // 3μs未満の変化は無視
-    return;
-
+    
     lgTxServo(gpio_chip_handle(), pin, pulse_us, 50, 0, 0);
 }
