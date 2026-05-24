@@ -173,15 +173,14 @@ const App: React.FC = () => {
     setStatus("disconnected");
   }, []);
 
-  // 初回だけ自動接続(任意。嫌なら消してボタン接続のみに)
+  // 初回だけ自動接続
   useEffect(() => {
     connect();
     return () => ws.current?.close();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── 一定間隔で送信(20Hz)。ジョイスティックで毎フレーム値が変わっても
-  //    送信頻度はここで律速され、Zero 2 W 側が詰まらない ──────────
+  // ── 一定間隔で送信(20Hz) ──────────
   useEffect(() => {
     const id = setInterval(() => {
       const data = stateRef.current;

@@ -35,6 +35,22 @@ int main(int argc, char** argv)
 
     const int websocket_server_port = std::atoi(argv[1]);
 
+    
+    // ── 制御周期の設定 ──────────────────────────────────────
+    // WebSocket の受信周期に依存せず、一定周期でモーターを更新する。
+    // これにより mecanum_wheel 内の移動平均フィルタが「実時間ベース」で効き、
+    // 送信頻度が変わってもフィルタの立ち上がり時間が一定になる。
+    constexpr int  control_interval_ms = 10;    // 100Hz でモーター更新
+    constexpr long deadman_timeout_ms  = 500;   // この時間 受信が無ければ停止
+ 
+    // 受信した最新の目標値(on_message が書き、on_tick が読む)。
+    // uWS の同一イベントループ上で動くため排他制御は不要。
+    float target_x = 0.0f;
+    float target_y = 0.0f;
+    float target_turn = 0.0f;
+    auto  last_receive_time = std::chrono::steady_clock::now();
+    bool  connected = false;
+ 
     websocket_server_start({
         .server_port = websocket_server_port,
         .on_server_start = [&](bool is_start_success) {
@@ -44,20 +60,28 @@ int main(int argc, char** argv)
                 std::cerr << "[ NG ] Port unavailable\n";
             }
         },
-        .on_open = []() {
+        .on_open = [&]() {
+            connected = true;
+            last_receive_time = std::chrono::steady_clock::now();
             std::cout << "[ OK ] client connected\n";
         },
         .on_close = [&]() {
+            connected = false;
+            target_x = target_y = target_turn = 0.0f;
             mecanum.stop();
             std::cout << "[ OK ] client disconnected\n";
         },
         .on_message = [&](std::string_view message) -> std::string {
             if (const auto receive_data = parse_json(message))
             {
-                auto mecanum_power = receive_data->wheel;
-                mecanum.move(mecanum_power.x, mecanum_power.y, mecanum_power.turn);
-
-                auto arm_power = receive_data->arm;
+                // モーターは目標値を保存するのみ。実際の駆動は on_tick が固定周期で行う。
+                target_x = receive_data->wheel.x;
+                target_y = receive_data->wheel.y;
+                target_turn = receive_data->wheel.turn;
+                last_receive_time = std::chrono::steady_clock::now();
+ 
+                // サーボは突入電流と無関係なため即時反映(servo 側でジッタ抑制済み)。
+                const auto arm_power = receive_data->arm;
                 axis1.move(arm_power.axis1);
                 axis2.move(arm_power.axis2);
                 axis3.move(arm_power.axis3);
@@ -69,6 +93,26 @@ int main(int argc, char** argv)
             {
                 return "[ NG ] Invalid json";
             }
-        }
+        },
+        .on_tick = [&]() {
+            // デッドマンスイッチ: 一定時間 受信が途絶えたら停止する。
+            // 通信切断・フリーズ時に最後の指令で走り続ける事故を防ぐ。
+            const auto now = std::chrono::steady_clock::now();
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                now - last_receive_time).count();
+ 
+            if (connected && elapsed < deadman_timeout_ms)
+            {
+                // 固定周期で move を呼ぶ。mecanum_wheel 内の移動平均が
+                // この一定周期で更新されるため、突入電流が時間方向に分散する。
+                mecanum.move(target_x, target_y, target_turn);
+            }
+            else
+            {
+                mecanum.stop();
+            }
+        },
+        .tick_interval_ms = control_interval_ms,
     });
+
 }

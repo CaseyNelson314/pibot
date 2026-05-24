@@ -4,7 +4,7 @@
 #include <cstdint>
 #include "gpio.hpp"
 #include "type.hpp"
-
+#include "moving_average.hpp"
 
 class motor
 {
@@ -12,6 +12,8 @@ class motor
     pin_output in2;
     pin_pwm pwm;
     direction dir;
+
+    moving_average<20> power_filter;
 
 public:
     motor(pin_output in1, pin_output in2, pin_pwm pwm, direction dir)
@@ -37,7 +39,10 @@ public:
 
     void move(int duty_ref)
     {
-        const int duty = duty_ref * direction_to_sign(dir);
+        power_filter.update(duty_ref);  // 移動平均がけして急な値の変化による突入電流を低減させる
+
+        const int duty = power_filter.get_value() * direction_to_sign(dir);
+
         if (std::abs(duty) > 255)
             return;
 
