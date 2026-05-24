@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/pi/pibot/actuator_ctrl_server/build/pibot 9000
+ExecStart=/home/pibot/pibot/actuator_ctrl_server/build/pibot 9000
 Restart=on-failure
 
 [Install]

@@ -43,7 +43,7 @@ void pin_pwm::begin()
     gpioSetPWMfrequency(pin, 100'000);
 }
 
-void pin_pwm::write(uint8_t angle)
+void pin_pwm::write(int angle)
 {
     gpioPWM(pin, angle);
 }
