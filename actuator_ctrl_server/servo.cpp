@@ -19,9 +19,10 @@ void servo::move(float angle_rad)
     const float angle_pulse = (angle_rad / angle_limit_rad) * pulse_range.diff() + pulse_range.min;
     const int pulse_us = static_cast<int>(angle_pulse);
 
-    if (pulse_us == last_pulse_us)   // 変化なし → 何もしない(保持)
+    // 前回から 3us 以上変化した時だけ再発行(同位置の再発行=プルプルを防ぐ)
+    if (std::abs(pulse_us - last_pulse_us) < 3)
         return;
     last_pulse_us = pulse_us;
-    
+
     lgTxServo(gpio_chip_handle(), pin, pulse_us, 50, 0, 0);
 }

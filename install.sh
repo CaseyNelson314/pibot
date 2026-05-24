@@ -45,7 +45,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=${MOMO_BIN} --force-i420 --hw-mjpeg-decoder=true --no-audio-device --use-libcamera test
+ExecStart=${MOMO_BIN} --force-i420 --hw-mjpeg-decoder=true --no-audio-device --use-libcamera p2p
 WorkingDirectory=${MOMO_DIR}/
 Restart=on-failure
 RestartSec=2
