@@ -21,7 +21,6 @@ After=network.target
 
 [Service]
 Type=simple
-User=${RUN_USER}
 ExecStart=${ACTUATOR_BIN} 9000
 Restart=on-failure
 RestartSec=2
