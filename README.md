@@ -73,7 +73,7 @@ momo というソフトウエアを用いて配信しており、正常に配信
 
 次のURLから閲覧できます。Raspberry Pi と同一 LAN に存在する PC のブラウザで開いてください。
 
-<http://pibot.local:8080/html/test.html>
+<http://pibot.local:8080/html/p2p.html>
 
 次のような画面が表示されます。
 

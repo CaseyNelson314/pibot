@@ -25,7 +25,8 @@ int main(int argc, char** argv)
         motor{ pin_output{  8 }, pin_output{ 18 }, pin_pwm{ 15 }, direction::cw },
         motor{ pin_output{ 25 }, pin_output{ 24 }, pin_pwm{ 23 }, direction::ccw },
     }};
-
+    mecanum.begin();
+    
     servo axis1{ pin_servo{ 2 }, deg_to_rad(270), { 500, 2500 } };
     servo axis2{ pin_servo{ 3 }, deg_to_rad(270), { 500, 2500 } };
     servo axis3{ pin_servo{ 4 }, deg_to_rad(270), { 500, 2500 } };
