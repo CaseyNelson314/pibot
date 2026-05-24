@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <iostream>
 #include <algorithm>
 
 #include "motor.hpp"

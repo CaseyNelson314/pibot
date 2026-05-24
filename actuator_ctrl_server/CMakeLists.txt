@@ -50,8 +50,8 @@ FetchContent_MakeAvailable(nlohmann_json_content)
 target_include_directories(nlohmann_json INTERFACE ${nlohmann_json_content_SOURCE_DIR}/include/)
 
 
-# pigpio
-find_library(PIGPIO_LIB pigpio REQUIRED)
+# lgpio
+find_library(LGPIO_LIB lgpio REQUIRED)
 
 add_executable(pibot
   gpio.cpp
@@ -64,5 +64,5 @@ add_executable(pibot
 target_link_libraries(pibot
   uWebSockets
   nlohmann_json::nlohmann_json
-  ${PIGPIO_LIB}
+  ${LGPIO_LIB}
 )

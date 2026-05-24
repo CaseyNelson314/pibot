@@ -1,6 +1,10 @@
 #pragma once
 
 
+// lgpio のチップ handle を返す (servo など他モジュールが GPIO 操作に使う)
+int gpio_chip_handle();
+
+
 class gpio_enabler
 {
 public:
