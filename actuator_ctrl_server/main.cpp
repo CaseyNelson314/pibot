@@ -20,10 +20,10 @@ int main(int argc, char** argv)
     motor_driver_enabler m_enabler{ pin_output{ 13 } };
 
     mecanum_wheel mecanum {{
-        motor{ pin_output{ 12 }, pin_output{  1 }, pin_pwm{  7 }, direction::cw },
-        motor{ pin_output{ 16 }, pin_output{ 21 }, pin_pwm{ 20 }, direction::cw },
-        motor{ pin_output{  8 }, pin_output{ 18 }, pin_pwm{ 15 }, direction::cw },
-        motor{ pin_output{ 25 }, pin_output{ 24 }, pin_pwm{ 23 }, direction::ccw },
+        motor{ pin_output{ 16 }, pin_output{ 21 }, pin_pwm{ 20 }, direction::cw },    // 右上
+        motor{ pin_output{ 12 }, pin_output{  1 }, pin_pwm{  7 }, direction::cw },    // 右下
+        motor{ pin_output{ 25 }, pin_output{ 24 }, pin_pwm{ 23 }, direction::ccw },   // 左下
+        motor{ pin_output{  8 }, pin_output{ 18 }, pin_pwm{ 15 }, direction::cw },    // 左上
     }};
     mecanum.begin();
     
