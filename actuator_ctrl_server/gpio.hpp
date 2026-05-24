@@ -1,10 +1,6 @@
 #pragma once
 
 
-// lgpio のチップ handle を返す (servo など他モジュールが GPIO 操作に使う)
-int gpio_chip_handle();
-
-
 class gpio_enabler
 {
 public:
@@ -34,5 +30,5 @@ public:
     pin_pwm(int pin);
     ~pin_pwm();
     void begin();
-    void write(int angle);
+    void write(uint8_t angle);
 };
