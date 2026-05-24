@@ -62,7 +62,7 @@ pin_pwm::~pin_pwm()
     // PWM を停止し、GPIO を解放する。
     // pigpio 版では入力モードに戻して HIGH 出力垂れ流しを防いでいた。
     // lgpio では duty 0 で停止 → Free で解放することで同等の状態にする。
-    lgTxPwm(g_chip_handle, pin, 100000, 0, 0, 0);
+    lgTxPwm(g_chip_handle, pin, 1000, 0, 0, 0);
     lgGpioFree(g_chip_handle, pin);
 }
 
@@ -75,11 +75,10 @@ void pin_pwm::begin()
 void pin_pwm::write(int duty_0_255)
 {
     // lgTxPwm の duty は 0〜100 (%)。元コードは 0〜255 を渡すため変換する。
-    // 周波数は元の pigpio 版と同じ 100kHz を維持。
     float duty_percent = (duty_0_255 / 255.0f) * 100.0f;
     if (duty_percent < 0.0f)   duty_percent = 0.0f;
     if (duty_percent > 100.0f) duty_percent = 100.0f;
-    lgTxPwm(g_chip_handle, pin, 100000, duty_percent, 0, 0);
+    lgTxPwm(g_chip_handle, pin, 1000, duty_percent, 0, 0);
 }
 
 // servo.cpp から handle を参照するためのアクセサ
