@@ -9,7 +9,7 @@ Raspberry Pi Zero 2 W で動作するロボットアーム付きメカナムロ�
 移動量、アームの角度等の指令値は、WebSocket を用いてロボットへ送信します。指令値を送信する PC は Raspberry Pi と同一の LAN に接続されている必要があります。WebSocket サーバーの URL、ポートは次の通りです。
 
 ```txt
-ws://raspberrypi.local:9000
+ws://pibot.local:9000
 ```
 
 指令値は JSON 形式の文字列で送信し、形式は次の通りです。
@@ -66,31 +66,49 @@ bun run dev
 カメラの映像は WebRTC を用いて受信します。WebRTC のシグナリングサーバーの URL は次の通りです。
 
 ```txt
-ws://raspberrypi.local:8000/ws
+ws://pibot.local:8000/ws
 ```
 
 momo というソフトウエアを用いて配信しており、正常に配信出来ているか確認できるウェブページも同時に配信されています。momo の公式ページは[こちら](https://momo.shiguredo.jp/)です。
 
 次のURLから閲覧できます。Raspberry Pi と同一 LAN に存在する PC のブラウザで開いてください。
 
-<http://raspberrypi.local:8080/html/test.html>
+<http://pibot.local:8080/html/test.html>
 
 次のような画面が表示されます。
 
 ![Alt text](https://github.com/user-attachments/assets/f15ac71a-6ea5-4c73-83a7-ad9c1be68c64)
 
-## 一から構築する手順
+## ロボット側 Raspberry Pi のセットアップ手順
 
-Raspberry Pi Zero 2 W に SSH で接続します。Raspberry Pi のターミナルが使えればよく、HDMI 接続でも実行可能です。
+### 0. Raspberry Pi OS のセットアップ
 
-以下コマンドは全て Raspberry Pi 上で実行するコマンドです。また本プロジェクトはホームディレクトリに配置される前提で制作しています。
+公式サイトからイメージ書き込み用ソフトウエアをインストールし、micro SD カードに OS イメージを書き込みます。
+
+https://www.raspberrypi.com/software/
+
+設定の際に SSH を有効化し、ホスト・ユーザー名は pibot に設定します。
 
 ### 1. ツールチェーンインストール
+
+Raspberry Pi Zero 2 W に SSH で接続します。Raspberry Pi のターミナルが使えればよく、HDMI 接続でも実行可能です。Windows から以下コマンドで Raspberry Pi のターミナルへ接続します。
+
+```sh
+ssh pibot@pibot.local
+```
+
+以下コマンドは全て Raspberry Pi 上で実行するコマンドです。また本プロジェクトはホームディレクトリに配置される前提で制作しています。
 
 ```sh
 sudo apt update
 sudo apt upgrade
-sudo apt install cmake pigpio
+sudo apt install cmake
+sudo apt install libcamera-dev
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
 ```
 
 ### 2. アクチュエーター制御用サーバー構築
@@ -140,4 +158,4 @@ sudo systemctl start  camera_streaming_server.service
 sudo systemctl enable camera_streaming_server.service
 ```
 
-> 本例ではインストールスクリプトでバイナリをダウンロードしますが、最新バイナリは[リリースページ](https://github.com/shiguredo/momo/releases)から取得できます。
+> 本例ではインストールスクリプトで momo のバイナリをダウンロードしますが、最新バイナリは[リリースページ](https://github.com/shiguredo/momo/releases)から取得できます。

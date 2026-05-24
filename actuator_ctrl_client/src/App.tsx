@@ -1,7 +1,7 @@
 // App.tsx
 import React, { useState, useEffect, useRef } from "react";
 
-const WS_URL = "ws://raspberrypi.local:9000";
+const WS_URL = "ws://pibot.local:9000";
 
 interface Wheel {
   x: number;
