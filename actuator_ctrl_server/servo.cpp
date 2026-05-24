@@ -13,11 +13,18 @@ servo::servo(int pin,
     lgGpioClaimOutput(gpio_chip_handle(), 0, pin, 0);
 }
 
+// servo.cpp
 void servo::move(float angle_rad)
 {
     const float angle_pulse = (angle_rad / angle_limit_rad) * pulse_range.diff() + pulse_range.min;
+    const int pulse_us = static_cast<int>(angle_pulse);
 
-    // lgTxServo はパルス幅をマイクロ秒で直接受け取る (pigpio の gpioServo と同じ感覚)。
-    // 第4引数 freq=50Hz (一般的なサーボの更新周期), offset=0, cycles=0 (連続出力)
-    lgTxServo(gpio_chip_handle(), pin, static_cast<int>(angle_pulse), 50, 0, 0);
+    if (pulse_us == last_pulse_us)   // 変化なし → 何もしない(保持)
+        return;
+    last_pulse_us = pulse_us;
+
+    if (std::abs(pulse_us - last_pulse_us) < 3)  // 3μs未満の変化は無視
+    return;
+
+    lgTxServo(gpio_chip_handle(), pin, pulse_us, 50, 0, 0);
 }
