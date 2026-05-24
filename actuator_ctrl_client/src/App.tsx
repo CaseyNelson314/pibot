@@ -220,6 +220,40 @@ const App: React.FC = () => {
     </div>
   );
 
+  // 離すと 0 に戻るスライダー(旋回用)。
+  // ドラッグ中は値を反映し、ポインタを離した時点で中央(0)へ復帰する。
+  const springSlider = (
+    label: string,
+    value: number,
+    min: number,
+    max: number,
+    step: number,
+    onChange: (v: number) => void
+  ) => {
+    const reset = () => onChange(0);
+    return (
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#9aa6b8", marginBottom: 4 }}>
+          <span>{label}</span>
+          <span style={{ color: "#e2e8f0", fontVariantNumeric: "tabular-nums" }}>{value.toFixed(2)}</span>
+        </div>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          onPointerUp={reset}
+          onPointerCancel={reset}
+          onMouseUp={reset}
+          onTouchEnd={reset}
+          style={{ width: "100%", accentColor: "#3b82f6" }}
+        />
+      </div>
+    );
+  };
+
   const meta = STATUS_META[status];
   const panel: React.CSSProperties = {
     background: "#0f141c",
@@ -321,7 +355,7 @@ const App: React.FC = () => {
             <span>X <b style={{ color: "#e2e8f0" }}>{wheel.x.toFixed(2)}</b></span>
             <span>Y <b style={{ color: "#e2e8f0" }}>{wheel.y.toFixed(2)}</b></span>
           </div>
-          {slider("Turn", wheel.turn, -1, 1, 0.01, (v) => setWheel((w) => ({ ...w, turn: v })))}
+          {springSlider("Turn", wheel.turn, -1, 1, 0.01, (v) => setWheel((w) => ({ ...w, turn: v })))}
           <div style={{ fontSize: 11, color: "#475569", marginTop: 4 }}>
             パッド: 並進(X/Y) ・ スライダー: 旋回(Turn)
           </div>
