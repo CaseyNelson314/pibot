@@ -263,10 +263,6 @@ const App: React.FC = () => {
   const heading: React.CSSProperties = {
     margin: "0 0 16px",
     fontSize: 13,
-    letterSpacing: "0.12em",
-    textTransform: "uppercase",
-    color: "#64748b",
-    fontWeight: 600,
   };
 
   return (
@@ -362,7 +358,7 @@ const App: React.FC = () => {
 
         {/* Arm */}
         <div style={panel}>
-          <h2 style={heading}>Arm Control</h2>
+          <h2 style={heading}>Servo Control</h2>
           {slider("Axis 1", arm.axis1, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis1: v })))}
           {slider("Axis 2", arm.axis2, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis2: v })))}
           {slider("Axis 3", arm.axis3, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis3: v })))}
@@ -406,8 +402,13 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
-
+      <iframe
+        src="http://pibot.local:8080/html/p2p.html"
+        style={{ width: "100%", height: 600, border: "none", borderRadius: 12 }}
+        allow="autoplay"
+      />
       <style>{`
+        *{ padding: 0; margin:0 }
         @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
         input[type=range] { height: 4px; -webkit-appearance: none; appearance: none; background: #1e2733; border-radius: 2px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; box-shadow: 0 0 8px rgba(59,130,246,0.5); }

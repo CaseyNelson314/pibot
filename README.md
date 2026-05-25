@@ -4,6 +4,40 @@ Raspberry Pi Zero 2 W で動作するロボットアーム付きメカナムロ�
 
 ## ロボットとの通信方法
 
+### 動作確認
+
+簡易ウェブクライアントを用いて動作確認ができます。セキュリティーの関係でウェブアプリは公開されておらず、自前でウェブサーバーを立てる必要があります。以下コマンドは全て Windows 上で実行します。
+
+> ウェブサーバーの起動には bun が必要です。bun インストール方法 (Windows用)
+> 
+> ```sh
+> powershell -c "irm bun.sh/install.ps1 | iex"
+> ```
+
+ウェブサーバー起動
+
+```sh
+cd ~/pibot/actuator_ctrl_client
+bun i
+bun run dev
+```
+
+起動すると次のように出力されるため、URL にブラウザでアクセスします。
+
+```txt
+  VITE xxxx  ready in 301 ms
+
+  ➜  Local:   http://localhost:XXXXX/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+```
+
+次のような操作画面が表示されます。CONNECT を押すと接続され、CONNECTED と出ると接続状態となります。
+
+
+
+![img](https://github.com/user-attachments/assets/c6412bb5-aee1-4801-9ff1-bfb747ca6b55)
+
 ### 移動量、アームの角度の送信
 
 移動量、アームの角度等の指令値は、WebSocket を用いてロボットへ送信します。指令値を送信する PC は Raspberry Pi と同一の LAN に接続されている必要があります。WebSocket サーバーの URL、ポートは次の通りです。
@@ -31,36 +65,6 @@ ws://pibot.local:9000
 }
 ```
 
-簡易ウェブクライアントを用いて動作検証できます。セキュリティーの関係でウェブアプリは公開されておらず、自前でウェブサーバーを立てる必要があります。以下コマンドは全て Windows 上で実行します。
-
-> ウェブサーバーの起動には bun が必要です。bun インストール方法 (Windows用)
-> 
-> ```sh
-> powershell -c "irm bun.sh/install.ps1 | iex"
-> ```
-
-ウェブサーバー起動
-
-```sh
-cd ~/pibot/actuator_ctrl_client
-bun i
-bun run dev
-```
-
-起動すると次のように出力されるため、URL にブラウザでアクセスします。
-
-```txt
-  VITE xxxx  ready in 301 ms
-
-  ➜  Local:   http://localhost:XXXXX/
-  ➜  Network: use --host to expose
-  ➜  press h + enter to show help
-```
-
-次のような操作画面が表示されます。
-
-![Alt text](https://github.com/user-attachments/assets/1bff3622-15c1-4341-9044-2fdeaa45bc32)
-
 ### カメラ映像の受信
 
 カメラの映像は WebRTC を用いて受信します。WebRTC のシグナリングサーバーの URL は次の通りです。
@@ -70,14 +74,6 @@ ws://pibot.local:8000/ws
 ```
 
 momo というソフトウエアを用いて配信しており、正常に配信出来ているか確認できるウェブページも同時に配信されています。momo の公式ページは[こちら](https://momo.shiguredo.jp/)です。
-
-次のURLから閲覧できます。Raspberry Pi と同一 LAN に存在する PC のブラウザで開いてください。
-
-<http://pibot.local:8080/html/p2p.html>
-
-次のような画面が表示されます。
-
-![Alt text](https://github.com/user-attachments/assets/f15ac71a-6ea5-4c73-83a7-ad9c1be68c64)
 
 ## ロボット側 Raspberry Pi のセットアップ手順
 

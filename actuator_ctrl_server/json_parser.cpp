@@ -12,17 +12,17 @@ static void from_json(const json& j, json_schema::wheel_t& self)
 
 static void from_json(const json& j, json_schema::arm_t& self)
 {
-    j.at("axis1").get_to(self.axis1);
-    j.at("axis2").get_to(self.axis2);
-    j.at("axis3").get_to(self.axis3);
-    j.at("axis4").get_to(self.axis4);
-    j.at("axis5").get_to(self.axis5);
+    // j.at("axis1").get_to(self.axis1);
+    // j.at("axis2").get_to(self.axis2);
+    // j.at("axis3").get_to(self.axis3);
+    j.at("camera_left_right").get_to(self.camera_left_right);
+    j.at("camera_up_down").get_to(self.camera_up_down);
 }
 
 static void from_json(const json& j, json_schema& self)
 {
     j.at("wheel").get_to(self.wheel);
-    j.at("arm").get_to(self.arm);
+    j.at("servo").get_to(self.arm);
 }
 
 std::optional<json_schema> parse_json(std::string_view json_string)

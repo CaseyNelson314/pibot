@@ -7,6 +7,13 @@ inline float deg_to_rad(int deg)
     return (2 * M_PI) * deg / 360;
 }
 
+inline float clamp(float value, float min_value, float max_value)
+{
+    if (value < min_value) return min_value;
+    if (value > max_value) return max_value;
+    return value;
+}
+
 struct vec2
 {
     float x, y;

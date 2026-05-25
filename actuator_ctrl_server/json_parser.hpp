@@ -14,12 +14,12 @@ struct json_schema
 
     struct arm_t
     {
-        float axis1;
-        float axis2;
-        float axis3;
-        float axis4;
-        float axis5;
-    } arm;
+        // float axis1;
+        // float axis2;
+        // float axis3;
+        float camera_left_right;
+        float camera_up_down;
+    } servo;
 };
 
 std::optional<json_schema> parse_json(std::string_view json_string);
