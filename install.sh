@@ -37,6 +37,9 @@ if [ -z "${MOMO_BIN}" ]; then
 fi
 MOMO_DIR="$(dirname "${MOMO_BIN}")"
 
+# 実行権限を付与
+chmod +x "${MOMO_BIN}"
+
 sudo tee /etc/systemd/system/camera_streaming_server.service > /dev/null <<EOF
 [Unit]
 Description=Momo Camera Streaming Server
