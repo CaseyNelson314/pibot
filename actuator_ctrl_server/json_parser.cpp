@@ -10,7 +10,7 @@ static void from_json(const json& j, json_schema::wheel_t& self)
     j.at("turn").get_to(self.turn);
 }
 
-static void from_json(const json& j, json_schema::arm_t& self)
+static void from_json(const json& j, json_schema::servo_t& self)
 {
     // j.at("axis1").get_to(self.axis1);
     // j.at("axis2").get_to(self.axis2);
@@ -22,7 +22,7 @@ static void from_json(const json& j, json_schema::arm_t& self)
 static void from_json(const json& j, json_schema& self)
 {
     j.at("wheel").get_to(self.wheel);
-    j.at("servo").get_to(self.arm);
+    j.at("servo").get_to(self.servo);
 }
 
 std::optional<json_schema> parse_json(std::string_view json_string)

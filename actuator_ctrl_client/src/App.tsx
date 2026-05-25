@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 
 const DEFAULT_WS_URL = "ws://pibot.local:9000";
 const SEND_INTERVAL_MS = 50; // 20Hz。ステート変化頻度と送信頻度を分離してWSの溢れを防ぐ
-const ARM_MAX = Math.PI * (3 / 2); // 270deg
 
 interface Wheel {
   x: number;
@@ -11,17 +10,14 @@ interface Wheel {
   turn: number;
 }
 
-interface Arm {
-  axis1: number;
-  axis2: number;
-  axis3: number;
-  axis4: number;
-  axis5: number;
+interface Servo {
+  camera_left_right: number;
+  camera_up_down: number;
 }
 
 interface RobotState {
   wheel: Wheel;
-  arm: Arm;
+  servo: Servo;
 }
 
 type ConnStatus = "disconnected" | "connecting" | "connected" | "error";
@@ -140,15 +136,15 @@ const App: React.FC = () => {
   const [status, setStatus] = useState<ConnStatus>("disconnected");
 
   const [wheel, setWheel] = useState<Wheel>({ x: 0, y: 0, turn: 0 });
-  const [arm, setArm] = useState<Arm>({ axis1: 0, axis2: 0, axis3: 0, axis4: 0, axis5: 0 });
+  const [servo, setServo] = useState<Servo>({ camera_left_right: 0, camera_up_down: 0 });
   const [sentJson, setSentJson] = useState<string>("{}");
   const [lastReply, setLastReply] = useState<string>("");
 
   // 送信ループが常に最新値を読めるよう ref に保持(再レンダ非依存)
-  const stateRef = useRef<RobotState>({ wheel, arm });
+  const stateRef = useRef<RobotState>({ wheel, servo });
   useEffect(() => {
-    stateRef.current = { wheel, arm };
-  }, [wheel, arm]);
+    stateRef.current = { wheel, servo };
+  }, [wheel, servo]);
 
   // ── 接続 ────────────────────────────────────────────────
   const connect = useCallback(() => {
@@ -356,14 +352,11 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Arm */}
+        {/* Servo */}
         <div style={panel}>
           <h2 style={heading}>Servo Control</h2>
-          {slider("Axis 1", arm.axis1, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis1: v })))}
-          {slider("Axis 2", arm.axis2, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis2: v })))}
-          {slider("Axis 3", arm.axis3, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis3: v })))}
-          {slider("Axis 4", arm.axis4, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis4: v })))}
-          {slider("Axis 5", arm.axis5, 0, ARM_MAX, 0.01, (v) => setArm((a) => ({ ...a, axis5: v })))}
+          {slider("カメラ左右", servo.camera_left_right, -1, 1, 0.01, (v) => setServo((a) => ({ ...a, camera_left_right: v })))}
+          {slider("カメラ上下", servo.camera_up_down, 0, 1, 0.01, (v) => setServo((a) => ({ ...a, camera_up_down: v })))}
         </div>
 
         {/* Telemetry */}
