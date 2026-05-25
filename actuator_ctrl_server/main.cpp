@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
                 // カメラ上下 受信値(↓ 0 ~ 1 ↑)をサーボの角度に変換
                 const float clamped_camera_ud = clamp(servo_power.camera_up_down, 0.0f, 1.0f);
-                camera_up_down.move((1 - clamped_camera_ud) * 1.35);  // 1.35は実験的に決めた
+                camera_up_down.move((1 - clamped_camera_ud) * 1.10);  // 実験的に決めた
                 return "[ OK ]";
             }
             else
