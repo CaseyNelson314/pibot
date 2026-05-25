@@ -6,11 +6,11 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# --- 依存ツールのインストール ---
+# 依存ツールのインストール
 sudo apt update
 sudo apt install -y git build-essential cmake
 
-# --- pigpio (GPIO制御ライブラリ) ---
+# pigpio (GPIO制御ライブラリ)
 # Debian 13 (trixie) では apt に無いためソースからビルドする。
 # 既にインストール済みならスキップ (べき等性のため)。
 if [ -f /usr/local/lib/libpigpio.so ] || [ -f /usr/lib/libpigpio.so ]; then
@@ -34,12 +34,13 @@ else
     fi
 fi
 
-# --- actuator サーバーのビルド ---
+# actuator サーバーのビルド
 # Zero 2 W のメモリを考慮して -j2
 cmake -S "${ROOT_DIR}/actuator_ctrl_server" -B "${ROOT_DIR}/actuator_ctrl_server/build"
 cmake --build "${ROOT_DIR}/actuator_ctrl_server/build" -j2
 
-# --- camera: momo バイナリに実行権限を付与 ---
+# camera
+# momo バイナリに実行権限を付与
 # リポジトリ同梱のバイナリをそのまま使う
 MOMO_BIN="$(find "${ROOT_DIR}/camera_streaming_server" -name momo -type f | head -n 1)"
 if [ -z "${MOMO_BIN}" ]; then

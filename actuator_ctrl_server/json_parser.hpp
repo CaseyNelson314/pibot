@@ -12,7 +12,7 @@ struct json_schema
         float turn;
     } wheel;
 
-    struct servo_t_t
+    struct servo_t
     {
         // float axis1;
         // float axis2;
