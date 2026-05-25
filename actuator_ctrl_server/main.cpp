@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 
                 // カメラ首振り 受信値(← -1.0 ~ 1.0 →)をサーボの角度に変換
                 const float clamped_camera_lr = clamp(servo_power.camera_left_right, -1.0f, 1.0f);
-                camera_left_right.move((clamped_camera_lr + 1) * deg_to_rad(135));  // 270度サーボなので135度でセンターになる
+                camera_left_right.move(std::abs(clamped_camera_lr - 1) * deg_to_rad(80));  // 80度をセンターとする
 
                 // カメラ上下 受信値(↓ 0 ~ 1 ↑)をサーボの角度に変換
                 const float clamped_camera_ud = clamp(servo_power.camera_up_down, 0.0f, 1.0f);
