@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     // servo axis2{ pin_servo{ 3 }, deg_to_rad(270), { 500, 2500 } };
     // servo axis3{ pin_servo{ 4 }, deg_to_rad(270), { 500, 2500 } };
     servo camera_left_right{ pin_servo{ 5 }, deg_to_rad(270), { 500, 2500 } };
-    servo camera_up_down{ pin_servo{ 6 }, 1.35, { 500, 2500 } };
+    servo camera_up_down{ pin_servo{ 6 }, deg_to_rad(270), { 500, 2500 } };
 
 
 
