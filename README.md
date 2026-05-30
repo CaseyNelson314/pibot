@@ -1,20 +1,104 @@
 # pibot
 
-Raspberry Pi Zero 2 W で動作するロボットアーム付きメカナムロボット
+Raspberry Pi Zero 2 W で動作する、ロボットアーム付きメカナムホイールロボット。
+
+Web ブラウザから遠隔操縦でき、カメラ映像を WebRTC で受信できる。
+
+## 構成概要
+
+- **アクチュエーター制御サーバー** (`actuator_ctrl_server/`)
+  
+  WebSocket で操縦指令を受け、メカナムホイール 4 輪とサーボ 5 軸を制御
+
+- **カメラ映像配信サーバー** (`camera_streaming_server/`)
+  
+  [momo](https://momo.shiguredo.jp/) を用いて WebRTC でカメラ映像を配信する。
+
+- **操縦用ウェブクライアント** (`actuator_ctrl_client/`)
+  
+  動作検証用。ジョイスティックで並進、スライダーで旋回・アームを操作する。
+
+> [!NOTE]
+> 本プロジェクトは Raspberry Pi のホームディレクトリ (`~/pibot`) に配置される前提です。
+> ホスト名は `pibot` を想定しており、各 URL は `pibot.local` で記載しています。
+> 環境に合わせて読み替えてください。
+
+---
+
+## セットアップ
+
+Raspberry Pi に SSH で接続して作業します（HDMI 直結でも可）。
+セットアップは 2 つのスクリプトに分かれています。
+
+```sh
+git clone https://github.com/CaseyNelson314/pibot.git
+cd ~/pibot
+chmod +x setup.sh install.sh
+
+./setup.sh     # 依存ツールのインストールとビルド
+./install.sh   # systemd への登録と起動
+```
+
+### setup.sh が行うこと
+
+- 依存ツール (`git` `build-essential` `cmake`) のインストール
+- pigpio のソースビルド
+- アクチュエーター制御サーバーのビルド
+- カメラ配信用 momo バイナリへの実行権限付与
+
+### install.sh が行うこと
+
+- `actuator.service` と `camera_streaming_server.service` を生成
+- systemd へ登録し、起動・自動起動を有効化
+
+各サービスは Raspberry Pi の起動時に自動的に立ち上がります。
 
 ## ロボットとの通信方法
 
-### 動作確認
+### 移動量・アームの角度の送信
 
-簡易ウェブクライアントを用いて動作確認ができます。セキュリティーの関係でウェブアプリは公開されておらず、自前でウェブサーバーを立てる必要があります。以下コマンドは全て Windows 上で実行します。
+指令値は WebSocket で送信します。送信元の PC は Raspberry Pi と同一 LAN に接続されている必要があります。
 
-> ウェブサーバーの起動には bun が必要です。bun インストール方法 (Windows用)
-> 
+送信先：
+
+```txt
+ws://pibot.local:9000
+```
+
+指令値は JSON 形式の文字列で送信します。範囲外の値はクランプされます。例：
+
+```json
+{
+  "wheel": {
+    "x": 0,
+    "y": 0,
+    "turn": 0
+  },
+  "servo": {
+    "camera_left_right": 0.07,   // -1~1 の範囲で、左が負、右が正
+    "camera_up_down": 0.56       //  0~1 の範囲で、下が負、上が正
+  }
+}
+```
+
+
+### 制御方式について
+
+サーバーは受信した指令値を保持し、一定周期（100 Hz）の制御ループでモーターを駆動します。送信側の通信周期に依存しません。
+
+各モーターは出力の平滑化を行い、急な指令値変化による突入電流を抑制します。移動平均を用いて平滑化しており、窓幅は 20 で、制御周期 100 Hz では約 0.2 秒かけて目標値まで立ち上がります。
+
+最後の指令受信から一定時間（500 ms）通信が途絶えると、自動的に停止します。
+
+### 操縦用ウェブクライアント
+
+簡易ウェブクライアントで動作確認できます。ウェブアプリは公開していないため、自前でウェブサーバーを起動します。以下は Windows 上での実行例です。
+
+> ウェブサーバーの起動には bun が必要です。Windows で bun をインストールしていない場合は、PowerShell で次を実行してインストールしてください。
+>
 > ```sh
 > powershell -c "irm bun.sh/install.ps1 | iex"
 > ```
-
-ウェブサーバー起動
 
 ```sh
 cd ~/pibot/actuator_ctrl_client
@@ -22,136 +106,80 @@ bun i
 bun run dev
 ```
 
-起動すると次のように出力されるため、URL にブラウザでアクセスします。
-
-```txt
-  VITE xxxx  ready in 301 ms
-
-  ➜  Local:   http://localhost:XXXXX/
-  ➜  Network: use --host to expose
-  ➜  press h + enter to show help
-```
-
-次のような操作画面が表示されます。CONNECT を押すと接続され、CONNECTED と出ると接続状態となります。
-
-
-
-![img](https://github.com/user-attachments/assets/c6412bb5-aee1-4801-9ff1-bfb747ca6b55)
-
-### 移動量、アームの角度の送信
-
-移動量、アームの角度等の指令値は、WebSocket を用いてロボットへ送信します。指令値を送信する PC は Raspberry Pi と同一の LAN に接続されている必要があります。WebSocket サーバーの URL、ポートは次の通りです。
-
-```txt
-ws://pibot.local:9000
-```
-
-指令値は JSON 形式の文字列で送信し、形式は次の通りです。
-
-```json
-{
-    "wheel": {
-        "x": 0.0,    // X移動量 (-1~1)
-        "y": 0.3,    // Y移動量 (-1~1)
-        "turn": 0.1  // 旋回量  (-1~1)
-    },
-    "arm": {
-        "axis1": 3.14,    // 第1関節 (rad)
-        "axis2": 0.23,    // 第2関節 (rad)
-        "axis3": -0.3,    // 第3関節 (rad)
-        "axis4": 0.51,    // 第4関節 (rad)
-        "axis5": 0.51     // 第5関節 (rad)
-    }
-}
-```
+表示された URL（`http://localhost:XXXXX/`）にブラウザでアクセスします。並進はジョイスティック、旋回はスライダーで操作します（いずれも手を離すと中立に戻ります）。
 
 ### カメラ映像の受信
 
-カメラの映像は WebRTC を用いて受信します。WebRTC のシグナリングサーバーの URL は次の通りです。
+カメラ映像は momo を用いて WebRTC で配信されます。同一 LAN の PC のブラウザから、動作確認用ページにアクセスできます。
+
+```txt
+http://pibot.local:8080/html/p2p.html
+```
+
+WebRTC のシグナリングサーバーの URL は次の通りです。通信方法は momo のドキュメントを参照してください。
 
 ```txt
 ws://pibot.local:8000/ws
 ```
 
-momo というソフトウエアを用いて配信しており、正常に配信出来ているか確認できるウェブページも同時に配信されています。momo の公式ページは[こちら](https://momo.shiguredo.jp/)です。
+## 開発時のヒント・トラブルシューティング
 
-## ロボット側 Raspberry Pi のセットアップ手順
-
-### 0. Raspberry Pi OS のセットアップ
-
-公式サイトからイメージ書き込み用ソフトウエアをインストールし、micro SD カードに OS イメージを書き込みます。
-
-https://www.raspberrypi.com/software/
-
-設定の際に SSH を有効化し、ホスト・ユーザー名は pibot に設定します。
-
-### 1. ツールチェーンインストール
-
-Raspberry Pi Zero 2 W に SSH で接続します。Raspberry Pi のターミナルが使えればよく、HDMI 接続でも実行可能です。Windows から以下コマンドで Raspberry Pi のターミナルへ接続します。
+### ソースを編集してビルドし直す
 
 ```sh
-ssh pibot@pibot.local
+cd ~/pibot/actuator_ctrl_server
+cmake --build build -j2
+sudo systemctl restart actuator
 ```
 
-以下コマンドは全て Raspberry Pi 上で実行するコマンドです。また本プロジェクトはホームディレクトリに配置される前提で制作しています。
+> [!NOTE]
+> ビルドは `-j2` を推奨します。Zero 2 W はメモリが少なく（約 400 MB）、
+> 並列数を上げると nlohmann/json や uWebSockets のコンパイルでメモリ不足になります。
+
+### サービスの状態を確認する
 
 ```sh
-sudo apt update
-sudo apt upgrade
-sudo apt install cmake
-sudo apt install libcamera-dev
-wget https://github.com/joan2937/pigpio/archive/master.zip
-unzip master.zip
-cd pigpio-master
-make
-sudo make install
+sudo systemctl status actuator camera_streaming_server
+journalctl -u actuator -f                 # ログをリアルタイム表示
+journalctl -u camera_streaming_server -f
 ```
 
-### 2. アクチュエーター制御用サーバー構築
+### `pibot` 起動時に「don't have permission to run」と出る／サービスが起動しない
 
-本プロジェクトをクローン
+pigpio は GPIO アクセスに root 権限を必要とします。`actuator.service` は root で起動する設定です。手動実行する場合も `sudo` を付けてください。
 
 ```sh
-git clone https://github.com/CaseyNelson314/pibot.git
-cd ~/pibot/actuator_ctrl_server/
+sudo ~/pibot/actuator_ctrl_server/build/pibot 9000
 ```
 
-ビルド
+### カメラサービスが起動しない
+
+カメラが認識していない場合に起こります。配線を確認してください。認識されているかは次で確認できます。
 
 ```sh
-cmake -S . -B build
-cmake --build build
+rpicam-hello --list-cameras
 ```
 
-起動時に実行されるように systemd に登録
+### モーターを動かすとバッテリーがエラー表示（点滅）になる／Raspberry Pi が落ちる
 
-```sh
-sudo cp ~/pibot/actuator_ctrl_server/actuator.service /etc/systemd/system/
-sudo systemctl start  actuator.service
-sudo systemctl enable actuator.service
-```
+電源容量不足、または電源の共有が原因です。
 
-> 単体で実行する場合 (9000番ポートでサーバーを起動)
-> 
+### 電源を直接切った後起動しなくなった
+
+まれに SD カードのファイルシステムが破損することがあります。
+
+1. SD カードを PC に挿し、`bootfs` パーティションが見えるか確認します。
+   - 見える場合 SD は生きています。Raspberry Pi Imager で OS を焼き直せば復旧します。
+   - 見えない場合 SD カードが物理的に破損しています。新しい SD に焼き直してください。
+2. 焼き直し後は `./setup.sh && ./install.sh` で復旧します。
+
+> [!NOTE]
+> OS を焼き直すと SSH のホスト鍵が変わり、再接続時に警告が出ます。PC 側で次を実行してから再接続してください。
+>
 > ```sh
-> sudo ~/pibot/actuator_ctrl_server/build/pibot 9000
+> ssh-keygen -R pibot.local
 > ```
 
-### 3. カメラ映像配信サーバー構築
+### VS Code の Remote-SSH が接続できない
 
-インストール
-
-```sh
-cd ~/pibot/camera_streaming_server/
-./install.sh
-```
-
-起動時に実行されるように systemd に登録
-
-```sh
-sudo cp ~/pibot/camera_streaming_server/camera_streaming_server.service /etc/systemd/system/
-sudo systemctl start  camera_streaming_server.service
-sudo systemctl enable camera_streaming_server.service
-```
-
-> 本例ではインストールスクリプトで momo のバイナリをダウンロードしますが、最新バイナリは[リリースページ](https://github.com/shiguredo/momo/releases)から取得できます。
+Zero 2 W はメモリが少なく、VS Code Server の常駐が不安定です。`rsync` での差分転送を推奨します。
