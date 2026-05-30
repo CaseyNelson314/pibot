@@ -1,6 +1,6 @@
 # pibot
 
-Raspberry Pi Zero 2 W で動作する、ロボットアーム付きメカナムホイールロボット。
+Raspberry Pi Zero 2 W で動作する、カメラ付きメカナムホイールロボット
 
 Web ブラウザから遠隔操縦でき、カメラ映像を WebRTC で受信できる。
 

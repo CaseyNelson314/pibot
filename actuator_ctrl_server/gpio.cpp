@@ -4,7 +4,8 @@
 
 gpio_enabler::gpio_enabler() noexcept
 {
-    assert(not(gpioInitialise() < 0));
+    const bool failed = gpioInitialise() < 0;
+    assert(not failed);
 }
 
 gpio_enabler::~gpio_enabler()
