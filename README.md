@@ -27,8 +27,7 @@ Web ブラウザから遠隔操縦でき、カメラ映像を WebRTC で受信�
 
 ## セットアップ
 
-Raspberry Pi に SSH で接続して作業します（HDMI 直結でも可）。
-セットアップは 2 つのスクリプトに分かれています。
+Raspberry Pi に SSH で接続して作業します（HDMI 直結でも可）。セットアップは 2 つのスクリプトに分かれています。特に指定のない限り、記載のコマンドは Raspberry Pi 上で実行します。
 
 ```sh
 git clone https://github.com/CaseyNelson314/pibot.git
@@ -70,9 +69,9 @@ ws://pibot.local:9000
 ```json
 {
   "wheel": {
-    "x": 0,
-    "y": 0,
-    "turn": 0
+    "x": 0,    // -1~1 の範囲で、前が正、後ろが負
+    "y": 0,    // -1~1 の範囲で、右が正、左が負
+    "turn": 0  // -1~1 の範囲で、右回転が正、左回転が負
   },
   "servo": {
     "camera_left_right": 0.07,   // -1~1 の範囲で、左が負、右が正
@@ -131,10 +130,6 @@ cd ~/pibot/actuator_ctrl_server
 cmake --build build -j2
 sudo systemctl restart actuator
 ```
-
-> [!NOTE]
-> ビルドは `-j2` を推奨します。Zero 2 W はメモリが少なく（約 400 MB）、
-> 並列数を上げると nlohmann/json や uWebSockets のコンパイルでメモリ不足になります。
 
 ### サービスの状態を確認する
 
