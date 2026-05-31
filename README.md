@@ -8,7 +8,7 @@ Web ブラウザから遠隔操縦でき、カメラ映像を WebRTC で受信�
 
 - **アクチュエーター制御サーバー** (`actuator_ctrl_server/`)
   
-  WebSocket で操縦指令を受け、メカナムホイール 4 輪とサーボ 5 軸を制御
+  WebSocket で操縦指令を受け、メカナムホイール 4 輪とサーボ 2 軸を制御
 
 - **カメラ映像配信サーバー** (`camera_streaming_server/`)
   

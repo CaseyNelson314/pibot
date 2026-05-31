@@ -1,3 +1,5 @@
+#pragma once
+
 #include "gpio.hpp"
 
 class motor_driver_enabler
